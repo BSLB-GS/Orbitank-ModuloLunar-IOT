@@ -11,7 +11,7 @@
 // ─── Configuração WiFi e Backend ─────────────────────────
 #define WIFI_SSID        "Wokwi-GUEST"
 #define WIFI_PASSWORD    ""
-#define BACKEND_URL      "http://SEU_IP:8080/api/telemetry"  //! MUDAR A ROTA
+#define BACKEND_URL      "http://webhook.site/1fed556c-cd0a-4479-b260-fa304fed0f5b"  //!TROCAR O IP!!!!!!!!!!
 
 // ─── Pinos ───────────────────────────────────────────────
 #define PIN_BTN_AGUA     32
@@ -136,7 +136,8 @@ void enviarTelemetria() {
   StaticJsonDocument<768> doc;
   doc["deviceId"]                  = 1;
   doc["stationCode"]               = 1;
-  doc["timestamp"]                 = ts;
+  doc["timestamp"]                 = ts; //ts em segundos (long)
+  doc["iceLevelPercent"]           = nivelAgua;
   doc["waterLevelPercent"]         = nivelAgua;
   doc["hydrogenLevelPercent"]      = h2Produzido;   
   doc["oxygenLevelPercent"]        = o2Produzido;   
@@ -352,9 +353,9 @@ void telaPrincipal() {
   snprintf(buf, sizeof(buf), "Temp:    %.1fC", temperatura);
   oled.drawStr(0, 50, buf);
   if (modoEmergencia)           oled.drawStr(0, 62, "!! EMERGENCIA !!");
-  else if (statusAtual == CRITICO) oled.drawStr(0, 62, "CRITICO");
-  else if (statusAtual == ATENCAO) oled.drawStr(0, 62, "ATENCAO");
-  else                             oled.drawStr(0, 62, "Status: OK");
+  else if (statusAtual == CRITICO) oled.drawStr(0, 62, "Status: CRITICO        ");
+  else if (statusAtual == ATENCAO) oled.drawStr(0, 62, "Status: ATENCAO      ");
+  else                             oled.drawStr(0, 62, "Status: OPERACIONAL  ");
   oled.sendBuffer();
 }
 
