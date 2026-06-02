@@ -7,11 +7,12 @@
 #include <ArduinoJson.h>
 #include <NTPClient.h>
 #include <WiFiUDP.h>
+#include <WiFiClientSecure.h>
 
 // ─── Configuração WiFi e Backend ─────────────────────────
 #define WIFI_SSID        "Wokwi-GUEST"
 #define WIFI_PASSWORD    ""
-#define BACKEND_URL      "http://webhook.site/1fed556c-cd0a-4479-b260-fa304fed0f5b"  //!TROCAR O IP!!!!!!!!!!
+#define BACKEND_URL      "https://orbitank-javaadvanced-gs.onrender.com/iot/telemetry"  //!TROCAR O IP!!!!!!!!!!
 
 // ─── Pinos ───────────────────────────────────────────────
 #define PIN_BTN_AGUA     32
@@ -129,14 +130,13 @@ void enviarTelemetria() {
     return;
   }
 
- 
   timeClient.update();
   unsigned long ts = timeClient.getEpochTime(); // Unix timestamp em segundos
 
   StaticJsonDocument<768> doc;
   doc["deviceId"]                  = 1;
   doc["stationCode"]               = 1;
-  doc["timestamp"]                 = ts; //ts em segundos (long)
+  doc["timestamp"]                 = ts; 
   doc["iceLevelPercent"]           = nivelAgua;
   doc["waterLevelPercent"]         = nivelAgua;
   doc["hydrogenLevelPercent"]      = h2Produzido;   
@@ -160,8 +160,12 @@ void enviarTelemetria() {
   String payload;
   serializeJson(doc, payload);
 
+  // ─── CRIA O CLIENTE SEGURO E IGNORA O CERTIFICADO ───
+  WiFiClientSecure client;
+  client.setInsecure(); 
+
   HTTPClient http;
-  http.begin(BACKEND_URL);
+  http.begin(client, BACKEND_URL); 
   http.addHeader("Content-Type", "application/json");
 
   int httpCode = http.POST(payload);
