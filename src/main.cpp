@@ -8,6 +8,7 @@
 #include <NTPClient.h>
 #include <WiFiUDP.h>
 #include <WiFiClientSecure.h>
+#include <WebServer.h>
 
 // ─── Configuração WiFi e Backend ─────────────────────────
 #define WIFI_SSID        "Wokwi-GUEST"
@@ -31,6 +32,8 @@ DHT dht(PIN_DHT, DHT_TYPE);
 
 // OLED 128x64 via I2C (SDA=21, SCL=22)
 U8G2_SSD1306_128X64_NONAME_F_HW_I2C oled(U8G2_R0, U8X8_PIN_NONE);
+
+WebServer server(80);
 
 // ─── Variáveis de estado ──────────────────────────────────
 float nivelAgua    = 0;
@@ -182,6 +185,68 @@ void enviarTelemetria() {
   http.end();
 }
 
+// Endpoint 1: Telemetria (GET /api/telemetria)
+void handleTelemetria() {
+  StaticJsonDocument<200> doc;
+  doc["agua"] = nivelAgua;
+  doc["energia"] = nivelEnergia;
+  doc["temperatura"] = temperatura;
+  doc["umidade"] = umidade;
+  doc["h2Produzido"] = h2Produzido;
+  doc["o2Produzido"] = o2Produzido;
+  
+  String json;
+  serializeJson(doc, json);
+  server.send(200, "application/json", json);
+}
+
+// Endpoint 2: Status do Sistema (GET /api/status)
+void handleStatus() {
+  StaticJsonDocument<200> doc;
+  doc["statusModulo"] = getModuleStatus();
+  doc["nivelRisco"] = getRiskLevel();
+  doc["eletroliseAtiva"] = eletroliseAtiva;
+  doc["eletroliseBloqueada"] = eletroliseBloqueada;
+  
+  String json;
+  serializeJson(doc, json);
+  server.send(200, "application/json", json);
+}
+
+// Endpoint 3: Alertas e Emergências (GET /api/alertas)
+void handleAlertas() {
+  StaticJsonDocument<200> doc;
+  doc["alertaAtivo"] = isAlertActive();
+  doc["tipoAlerta"] = getAlertType();
+  doc["mensagemAlerta"] = getAlertMessage();
+  doc["modoEmergencia"] = modoEmergencia;
+  
+  String json;
+  serializeJson(doc, json);
+  server.send(200, "application/json", json);
+}
+
+// Dashboard Simples (GET /)
+void handleDashboard() {
+  // Uma página HTML simples que atualiza sozinha a cada 2 segundos
+  String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'>";
+  html += "<meta http-equiv='refresh' content='2'>";
+  html += "<title>LunarFuel Dashboard</title>";
+  html += "<style>body{font-family:Arial; text-align:center; background:#121212; color:#fff; margin-top:50px;}";
+  html += ".card{border:1px solid #444; padding:20px; border-radius:10px; display:inline-block; background:#1e1e1e;}</style>";
+  html += "</head><body><div class='card'>";
+  html += "<h2>🚀 LunarFuel Dashboard</h2>";
+  html += "<p><b>Nível de Água:</b> " + String(nivelAgua) + "% | <b>Energia:</b> " + String(nivelEnergia) + "%</p>";
+  html += "<p><b>H2 Gerado:</b> " + String(h2Produzido) + "% | <b>O2 Gerado:</b> " + String(o2Produzido) + "%</p>";
+  html += "<p><b>Temperatura:</b> " + String(temperatura) + "°C</p>";
+  html += "<hr>";
+  html += "<p><b>Status:</b> " + getModuleStatus() + "</p>";
+  html += "<p><b>Mensagem:</b> <span style='color:red;'>" + getAlertMessage() + "</span></p>";
+  html += "</div></body></html>";
+  
+  server.send(200, "text/html", html);
+}
+
 // ─── Setup ───────────────────────────────────────────────
 void setup() {
   Serial.begin(115200);
@@ -220,6 +285,16 @@ void setup() {
   }
   if (WiFi.status() == WL_CONNECTED) {
     Serial.printf("\nWiFi conectado! IP: %s\n", WiFi.localIP().toString().c_str());
+
+    // Configuração das rotas
+    server.on("/", handleDashboard);
+    server.on("/api/telemetria", handleTelemetria);
+    server.on("/api/status", handleStatus);
+    server.on("/api/alertas", handleAlertas);
+  
+    server.begin();
+    Serial.println("WebServer HTTP iniciado!");
+
     timeClient.begin();       
     timeClient.update();
   } else {
@@ -412,6 +487,7 @@ void atualizarDisplay() {
 
 // ─── Loop principal ───────────────────────────────────────
 void loop() {
+  server.handleClient();
   lerBotoes();
   atualizarSaidas();
 
