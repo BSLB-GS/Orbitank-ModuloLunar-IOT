@@ -13,7 +13,7 @@
 // ─── Configuração WiFi e Backend ─────────────────────────
 #define WIFI_SSID        "Wokwi-GUEST"
 #define WIFI_PASSWORD    ""
-#define BACKEND_URL      "https://orbitank-javaadvanced-gs.onrender.com/iot/telemetry"  //!TROCAR O IP!!!!!!!!!!
+#define BACKEND_URL      "https://orbitank-javaadvanced-gs.onrender.com/iot/telemetry"
 
 // ─── Pinos ───────────────────────────────────────────────
 #define PIN_BTN_AGUA     32
@@ -228,7 +228,7 @@ void handleAlertas() {
 
 // Dashboard Simples (GET /)
 void handleDashboard() {
-  // Uma página HTML simples que atualiza sozinha a cada 2 segundos
+  
   String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'>";
   html += "<meta http-equiv='refresh' content='2'>";
   html += "<title>LunarFuel Dashboard</title>";
