@@ -167,6 +167,7 @@ Exemplo de payload:
   "alertMessage": "",
   "alertSeverity": "NONE"
 }
+```
 
 ### Link DashBoard
 http://localhost:8080/
