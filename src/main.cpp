@@ -83,10 +83,9 @@ bool mostrarBloqueio          = false;
 
 // ─── Helpers de status ───────────────────────────────────
 String getModuleStatus() {
-  if (modoEmergencia)       return "EMERGENCY";
-  if (statusAtual == CRITICO)  return "CRITICAL";
-  if (statusAtual == ATENCAO)  return "WARNING";
-  return "OPERATIONAL";
+if (modoEmergencia || statusAtual == CRITICO) return "EMERGENCY_MODE";
+if (statusAtual == ATENCAO) return "MAINTENANCE";
+return "ONLINE";
 }
 
 String getRiskLevel() {
@@ -137,8 +136,8 @@ void enviarTelemetria() {
   unsigned long ts = timeClient.getEpochTime(); // Unix timestamp em segundos
 
   StaticJsonDocument<768> doc;
-  doc["deviceId"]                  = 1;
-  doc["stationCode"]               = 1;
+  doc["deviceId"]                  = "1";
+  doc["stationCode"]               = "1";
   doc["timestamp"]                 = ts; 
   doc["iceLevelPercent"]           = nivelAgua;
   doc["waterLevelPercent"]         = nivelAgua;
@@ -231,11 +230,11 @@ void handleDashboard() {
   
   String html = "<!DOCTYPE html><html><head><meta charset='UTF-8'>";
   html += "<meta http-equiv='refresh' content='2'>";
-  html += "<title>LunarFuel Dashboard</title>";
+  html += "<title>Orbitank Dashboard</title>";
   html += "<style>body{font-family:Arial; text-align:center; background:#121212; color:#fff; margin-top:50px;}";
   html += ".card{border:1px solid #444; padding:20px; border-radius:10px; display:inline-block; background:#1e1e1e;}</style>";
   html += "</head><body><div class='card'>";
-  html += "<h2>🚀 LunarFuel Dashboard</h2>";
+  html += "<h2>🚀 Orbitank Dashboard</h2>";
   html += "<p><b>Nível de Água:</b> " + String(nivelAgua) + "% | <b>Energia:</b> " + String(nivelEnergia) + "%</p>";
   html += "<p><b>H2 Gerado:</b> " + String(h2Produzido) + "% | <b>O2 Gerado:</b> " + String(o2Produzido) + "%</p>";
   html += "<p><b>Temperatura:</b> " + String(temperatura) + "°C</p>";
@@ -270,7 +269,7 @@ void setup() {
   oled.begin();
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
-  oled.drawStr(20, 30, "LunarFuel Alpha");
+  oled.drawStr(20, 30, "Orbitank Alpha");
   oled.drawStr(28, 45, "Iniciando...");
   oled.sendBuffer();
 
@@ -422,7 +421,7 @@ void atualizarSaidas() {
 void telaPrincipal() {
   oled.clearBuffer();
   oled.setFont(u8g2_font_6x10_tf);
-  oled.drawStr(0, 10, "LunarFuel Alpha");
+  oled.drawStr(0, 10, "Orbitank Alpha");
   oled.drawHLine(0, 13, 128);
   char buf[22];
   snprintf(buf, sizeof(buf), "Agua:    %3d%%", (int)nivelAgua);
