@@ -106,5 +106,67 @@ Ao se conectar à rede Wi-Fi local, o ESP32 levanta um servidor HTTP na porta 80
 }
 ```
 
+### 3. Status do Sistema
+* **Rota:** `GET /api/status`
+* **Tipo de resposta:** `application/json`
+* **Exemplo de Resposta:**
+```json
+{
+  "statusModulo": "ONLINE",
+  "nivelRisco": "LOW",
+  "eletroliseAtiva": true,
+  "eletroliseBloqueada": false
+}
+```
+
+### 4. Alertas e Emergências
+* **Rota:** `GET /api/alertas`
+* **Tipo de resposta:** `application/json`
+* **Exemplo de Resposta:**
+```json
+{
+  "alertaAtivo": true,
+  "tipoAlerta": "LOW_ENERGY",
+  "mensagemAlerta": "Nivel de energia critico: abaixo de 20%",
+  "modoEmergencia": false
+}
+```
+
+## Integração com a API Java
+
+Além dos endpoints locais, o ESP32 envia automaticamente um POST para a API Java a cada 60 segundos.
+
+- **Rota externa:** `POST /iot/telemetry`
+- **URL:** `https://orbitank-javaadvanced-gs.onrender.com/iot/telemetry`
+- **Formato:** JSON
+
+Exemplo de payload:
+
+```json
+{
+  "deviceId": "ESP32-STATION-01",
+  "stationCode": "1",
+  "timestamp": 1780498800,
+  "iceLevelPercent": 80.0,
+  "waterLevelPercent": 50.0,
+  "hydrogenLevelPercent": 25.0,
+  "oxygenLevelPercent": 90.0,
+  "energyLevelPercent": 72.5,
+  "temperatureCelsius": 25.3,
+  "humidityPercent": 61.0,
+  "electrolysisActive": false,
+  "electrolysisBlocked": false,
+  "blockReason": "",
+  "hydrogenGeneratedPercent": 25.0,
+  "oxygenGeneratedPercent": 90.0,
+  "emergencyMode": false,
+  "moduleStatus": "ONLINE",
+  "riskLevel": "LOW",
+  "alertActive": false,
+  "alertType": "NONE",
+  "alertMessage": "",
+  "alertSeverity": "NONE"
+}
+
 ### Link DashBoard
 http://localhost:8080/
